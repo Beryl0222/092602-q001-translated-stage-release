@@ -1,9 +1,32 @@
 {
-  "名称": "国际剧目译演发布基础记录",
-  "必填字段": [
-    "record_id",
-    "owner_id",
-    "state"
+  "名称": "国际剧目译演发布服务契约",
+  "说明": "全部写操作均为追加式事件；已发生事实（演出、当时批准、当时发布包）不可抹除，取消/换角/撤回只冻结未来使用。时钟可注入，发布任务按可控时钟在开演前生成并支持中断续跑。",
+  "核心实体与可追溯关系": {
+    "story": "故事（剧目）",
+    "source": "中文原稿，隶属故事，标注采录亲历者 witness_id",
+    "segment": "故事片段（逐句字幕单位），隶属原稿，登记全部相关亲历者",
+    "permit": "亲历者许可，按 segment_ids 授权；可撤回，撤回只影响未演出场次",
+    "proposal": "翻译分支译稿：片段+译者+英文文本+文化说明+改动类别；重复提交幂等，内容冲突进入合议",
+    "review": "授权人复核：historical/identity 类改动必须由覆盖该句的亲历者本人 approved",
+    "role": "角色，可标注身份对应的亲历者",
+    "version": "角色版本，把每句 segment 绑定到一条已批准 proposal；换角的最小单位",
+    "performance": "场次：演员表 cast、scheduled/locked/performed/cancelled、锁定后仅接收 wording 兼容修订",
+    "channel": "发布渠道（字幕屏、音频端等），发布包生成时登记投递回执",
+    "release": "开演前生成的每场唯一发布包：逐句含原稿、译稿版本、许可状态、修订与冻结原因，由内容哈希唯一标识"
+  },
+  "关键规则": [
+    "同一 segment+translator+英文文本+文化说明的重复提交返回原 proposal（duplicate=true）",
+    "同片段出现不同英文文本的在审/已批准译稿 => panel_convened，须合议 decidePanel",
+    "historical、identity 改动必须取得覆盖该句且仍有效的亲历者许可对应授权人复核通过",
+    "locked 场次只接受 wording 修订，且只能改本场当前演员表中的版本；同一修订幂等，异文冲突进入 revision_disputed",
+    "换角 casting_changed 冻结旧版本在该场未来使用；取消 performance_cancelled 冻结整场；撤回 permit_revoked 冻结相关译稿未演出场次",
+    "performed 场次与已生成发布包永久保留，冻结事件对其效果为 performed_immutable",
+    "发布任务 release_job_scheduled 后，runDueJobs 只在 lead_ms 窗口内且开演前构建；崩溃留下 pending/running，重跑续跑；已完成不重复生成"
   ],
-  "说明": "该契约只描述现有登记能力，后续领域状态在此基础上扩展。"
+  "场景文件格式": {
+    "actions": [{ "op": "Service 方法名", "args": {}, "at": "ISO8601，可选，设置可控时钟" }],
+    "trace_segment": "可选，validate 结束后打印该句逐句溯源"
+  },
+  "溯源接口": "Service.trace(segment_id, { performanceId? }) 返回每版译稿：所依原稿 source_id/中文文本、提交者、各授权复核（谁批准、何时、对应许可）、生效场次 effective_performances、撤回/换角/取消影响 freeze_impacts",
+  "向后兼容": "register/find 保留早期 record_id 通用登记能力，底层改为 record_registered 事件"
 }
