@@ -6,7 +6,7 @@
   "description": "国际剧目译演发布的服务端领域基础",
   "scripts": {
     "test": "node --test",
-    "build": "node --check src/domain.js && node --check src/repository.js && node --check src/service.js && node --check src/cli.js",
+    "build": "node --check src/domain.js && node --check src/clock.js && node --check src/repository.js && node --check src/service.js && node --check src/cli.js",
     "check:sample": "node src/cli.js validate data/sample.json"
   }
 }

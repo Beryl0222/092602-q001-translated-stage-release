@@ -1,0 +1,23 @@
+{
+  "名称": "国际剧目译演发布服务契约",
+  "实体": {
+    "故事片段": ["fragment_id", "title", "summary"],
+    "中文原稿": ["manuscript_id", "fragment_id", "author_id", "version", "lines"],
+    "台词行标记": ["involves_history", "involves_identity", "person_refs", "requires_license"],
+    "翻译分支": ["branch_id", "manuscript_id", "manuscript_version", "language", "translator_id", "base_lines"],
+    "修订": ["revision_id", "branch_id", "submitted_by", "changes", "change_kind", "base_revision"],
+    "亲历者许可": ["license_id", "grantor_id", "subject", "scope", "valid_from", "valid_until"],
+    "角色版本": ["role_version_id", "production_id", "role", "actor_id", "effective_at"],
+    "场次": ["performance_id", "production_id", "showtime", "channel_ids"],
+    "发布渠道": ["channel_id", "kind", "region"]
+  },
+  "关键规则": [
+    "重复提交同一 revision_id 且内容一致时返回首次结果；内容不同则拒绝",
+    "同一台词行被不同内容从同一基点推进时进入合议，裁定胜出或合并后方可生效",
+    "涉及史实或人物身份的修订必须经对应类别复核人批准，且不得标记为兼容修订",
+    "场次锁定后仅接收 change_kind 为 compatible 的修订，兼容修订生效后发布包自动重排",
+    "演出取消、换角、授权撤回只冻结未来使用；已发生的演出与发布记录保留",
+    "发布包按可控时钟在开演前生成，每个场次唯一，进程中断后可从日志续跑"
+  ],
+  "追溯接口": "explainSubtitle(performance_id, line_id) 返回原稿版本、批准人、生效场次与撤回影响"
+}
